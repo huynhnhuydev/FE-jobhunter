@@ -2,11 +2,12 @@ import { IBackendRes, ICompany, IAccount, IUser, IModelPaginate, IGetAccount, IJ
 import axios from 'config/axios-customize';
 
 /**
- * 
+ *
 Module Auth
  */
-export const callRegister = (name: string, email: string, password: string, age: number, gender: string, address: string) => {
-    return axios.post<IBackendRes<IUser>>('/api/v1/auth/register', { name, email, password, age, gender, address })
+export const callRegister = (name: string, email: string, password: string, age: number, gender: string, address: string, salary: number,
+    level: string, skills: ISkill[]) => {
+    return axios.post<IBackendRes<IUser>>('/api/v1/auth/register', { name, email, password, age, gender, address, salary, level, skills })
 }
 
 export const callLogin = (username: string, password: string) => {
@@ -134,6 +135,10 @@ export const callFetchJob = (query: string) => {
 
 export const callFetchJobById = (id: string) => {
     return axios.get<IBackendRes<IJob>>(`/api/v1/jobs/${id}`);
+}
+
+export const callFetchJobCluster = (query: string) => {
+    return axios.get<IBackendRes<IModelPaginate<IJob>>>(`/api/v1/job-cluster/jobs?${query}`);
 }
 
 /**

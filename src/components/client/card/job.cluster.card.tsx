@@ -1,4 +1,4 @@
-import { callFetchJob } from '@/config/api';
+import { callFetchJobCluster } from '@/config/api';
 import { convertSlug, getLocationName } from '@/config/utils';
 import { IJob } from '@/types/backend';
 import { EnvironmentOutlined, ThunderboltOutlined } from '@ant-design/icons';
@@ -16,10 +16,11 @@ dayjs.extend(relativeTime);
 
 interface IProps {
     showPagination?: boolean;
+    userId?: string;  // Thêm prop userId
 }
 
-const JobCard = (props: IProps) => {
-    const { showPagination = false } = props;
+const JobClusterCard = (props: IProps) => {
+    const { showPagination = false, userId } = props;
 
     const [displayJob, setDisplayJob] = useState<IJob[] | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -34,12 +35,14 @@ const JobCard = (props: IProps) => {
     const location = useLocation();
 
     useEffect(() => {
-        fetchJob();
-    }, [current, pageSize, filter, sortQuery, location]);
+        if (userId) {
+            fetchJob(userId);  // Gọi API với userId
+        }
+    }, [current, pageSize, filter, sortQuery, location, userId]);
 
-    const fetchJob = async () => {
-        setIsLoading(true)
-        let query = `page=${current}&size=${pageSize}`;
+    const fetchJob = async (userId: string) => {
+        setIsLoading(true);
+        let query = `page=${current}&size=${pageSize}&userId=${userId}`;  // Thêm userId vào query
         if (filter) {
             query += `&${filter}`;
         }
@@ -65,30 +68,28 @@ const JobCard = (props: IProps) => {
             query += `&filter=${encodeURIComponent(q)}`;
         }
 
-        const res = await callFetchJob(query);
+        const res = await callFetchJobCluster(query);
         if (res && res.data) {
             setDisplayJob(res.data.result);
-            setTotal(res.data.meta.total)
+            setTotal(res.data.meta.total);
         }
         setIsLoading(false);
-    }
-
-
+    };
 
     const handleOnchangePage = (pagination: { current: number, pageSize: number }) => {
         if (pagination && pagination.current !== current) {
-            setCurrent(pagination.current)
+            setCurrent(pagination.current);
         }
         if (pagination && pagination.pageSize !== pageSize) {
-            setPageSize(pagination.pageSize)
+            setPageSize(pagination.pageSize);
             setCurrent(1);
         }
-    }
+    };
 
     const handleViewDetailJob = (item: IJob) => {
         const slug = convertSlug(item.name);
-        navigate(`/job/${slug}?id=${item.id}`)
-    }
+        navigate(`/job/${slug}?id=${item.id}`);
+    };
 
     return (
         <div className={`${styles["card-job-section"]}`}>
@@ -97,7 +98,7 @@ const JobCard = (props: IProps) => {
                     <Row gutter={[20, 20]}>
                         <Col span={24}>
                             <div className={isMobile ? styles["dflex-mobile"] : styles["dflex-pc"]}>
-                                <span className={styles["title"]}>Đề xuất Công Việc Mới Nhất</span>
+                                <span className={styles["title"]}>Đề xuất Công Việc Có Thể Bạn Quan Tâm</span>
                                 {!showPagination &&
                                     <Link to="job">Xem tất cả</Link>
                                 }
@@ -124,12 +125,10 @@ const JobCard = (props: IProps) => {
                                                 <div className={styles["job-updatedAt"]}>{item.updatedAt ? dayjs(item.updatedAt).locale('en').fromNow() : dayjs(item.createdAt).locale('en').fromNow()}</div>
                                             </div>
                                         </div>
-
                                     </Card>
                                 </Col>
-                            )
+                            );
                         })}
-
 
                         {(!displayJob || displayJob && displayJob.length === 0)
                             && !isLoading &&
@@ -138,22 +137,20 @@ const JobCard = (props: IProps) => {
                             </div>
                         }
                     </Row>
-                    {showPagination && <>
-                        <div style={{ marginTop: 30 }}></div>
-                        <Row style={{ display: "flex", justifyContent: "center" }}>
-                            <Pagination
-                                current={current}
-                                total={total}
-                                pageSize={pageSize}
-                                responsive
-                                onChange={(p: number, s: number) => handleOnchangePage({ current: p, pageSize: s })}
-                            />
-                        </Row>
-                    </>}
+                    {showPagination && <div style={{ marginTop: 30 }}></div>}
+                    {showPagination && <Row style={{ display: "flex", justifyContent: "center" }}>
+                        <Pagination
+                            current={current}
+                            total={total}
+                            pageSize={pageSize}
+                            responsive
+                            onChange={(p: number, s: number) => handleOnchangePage({ current: p, pageSize: s })}
+                        />
+                    </Row>}
                 </Spin>
             </div>
         </div>
-    )
+    );
 }
 
-export default JobCard;
+export default JobClusterCard;

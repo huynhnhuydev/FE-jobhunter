@@ -70,6 +70,10 @@ export interface IUser {
     age: number;
     gender: string;
     address: string;
+    salary: number;
+    level: string;
+    skills: ISkill[];
+
     role?: {
         id: string;
         name: string;

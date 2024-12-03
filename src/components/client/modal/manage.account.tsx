@@ -128,6 +128,7 @@ const JobByEmail = (props: any) => {
             }
         }
         init();
+        fetchSkill();
     }, [])
 
     const fetchSkill = async () => {
