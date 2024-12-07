@@ -101,136 +101,136 @@ const UserUpdateInfo = (props: any) => {
     )
 }
 
-const JobByEmail = (props: any) => {
-    const [form] = Form.useForm();
-    const user = useAppSelector(state => state.account.user);
-    const [optionsSkills, setOptionsSkills] = useState<{
-        label: string;
-        value: string;
-    }[]>([]);
+// const JobByEmail = (props: any) => {
+//     const [form] = Form.useForm();
+//     const user = useAppSelector(state => state.account.user);
+//     const [optionsSkills, setOptionsSkills] = useState<{
+//         label: string;
+//         value: string;
+//     }[]>([]);
 
-    const [subscriber, setSubscriber] = useState<ISubscribers | null>(null);
+//     const [subscriber, setSubscriber] = useState<ISubscribers | null>(null);
 
-    useEffect(() => {
-        const init = async () => {
-            await fetchSkill();
-            const res = await callGetSubscriberSkills();
-            if (res && res.data) {
-                setSubscriber(res.data);
-                const d = res.data.skills;
-                const arr = d.map((item: any) => {
-                    return {
-                        label: item.name as string,
-                        value: item.id + "" as string
-                    }
-                });
-                form.setFieldValue("skills", arr);
-            }
-        }
-        init();
-        fetchSkill();
-    }, [])
+//     useEffect(() => {
+//         const init = async () => {
+//             await fetchSkill();
+//             const res = await callGetSubscriberSkills();
+//             if (res && res.data) {
+//                 setSubscriber(res.data);
+//                 const d = res.data.skills;
+//                 const arr = d.map((item: any) => {
+//                     return {
+//                         label: item.name as string,
+//                         value: item.id + "" as string
+//                     }
+//                 });
+//                 form.setFieldValue("skills", arr);
+//             }
+//         }
+//         init();
+//         fetchSkill();
+//     }, [])
 
-    const fetchSkill = async () => {
-        let query = `page=1&size=100&sort=createdAt,desc`;
+//     const fetchSkill = async () => {
+//         let query = `page=1&size=100&sort=createdAt,desc`;
 
-        const res = await callFetchAllSkill(query);
-        if (res && res.data) {
-            const arr = res?.data?.result?.map(item => {
-                return {
-                    label: item.name as string,
-                    value: item.id + "" as string
-                }
-            }) ?? [];
-            setOptionsSkills(arr);
-        }
-    }
+//         const res = await callFetchAllSkill(query);
+//         if (res && res.data) {
+//             const arr = res?.data?.result?.map(item => {
+//                 return {
+//                     label: item.name as string,
+//                     value: item.id + "" as string
+//                 }
+//             }) ?? [];
+//             setOptionsSkills(arr);
+//         }
+//     }
 
-    const onFinish = async (values: any) => {
-        const { skills } = values;
+//     const onFinish = async (values: any) => {
+//         const { skills } = values;
 
-        const arr = skills?.map((item: any) => {
-            if (item?.id) return { id: item.id };
-            return { id: item }
-        });
+//         const arr = skills?.map((item: any) => {
+//             if (item?.id) return { id: item.id };
+//             return { id: item }
+//         });
 
-        if (!subscriber?.id) {
-            //create subscriber
-            const data = {
-                email: user.email,
-                name: user.name,
-                skills: arr
-            }
+//         if (!subscriber?.id) {
+//             //create subscriber
+//             const data = {
+//                 email: user.email,
+//                 name: user.name,
+//                 skills: arr
+//             }
 
-            const res = await callCreateSubscriber(data);
-            if (res.data) {
-                message.success("Cập nhật thông tin thành công");
-                setSubscriber(res.data);
-            } else {
-                notification.error({
-                    message: 'Có lỗi xảy ra',
-                    description: res.message
-                });
-            }
-
-
-        } else {
-            //update subscriber
-            const res = await callUpdateSubscriber({
-                id: subscriber?.id,
-                skills: arr
-            });
-            if (res.data) {
-                message.success("Cập nhật thông tin thành công");
-                setSubscriber(res.data);
-            } else {
-                notification.error({
-                    message: 'Có lỗi xảy ra',
-                    description: res.message
-                });
-            }
-        }
+//             const res = await callCreateSubscriber(data);
+//             if (res.data) {
+//                 message.success("Cập nhật thông tin thành công");
+//                 setSubscriber(res.data);
+//             } else {
+//                 notification.error({
+//                     message: 'Có lỗi xảy ra',
+//                     description: res.message
+//                 });
+//             }
 
 
-    }
+//         } else {
+//             //update subscriber
+//             const res = await callUpdateSubscriber({
+//                 id: subscriber?.id,
+//                 skills: arr
+//             });
+//             if (res.data) {
+//                 message.success("Cập nhật thông tin thành công");
+//                 setSubscriber(res.data);
+//             } else {
+//                 notification.error({
+//                     message: 'Có lỗi xảy ra',
+//                     description: res.message
+//                 });
+//             }
+//         }
 
-    return (
-        <>
-            <Form
-                onFinish={onFinish}
-                form={form}
-            >
-                <Row gutter={[20, 20]}>
-                    <Col span={24}>
-                        <Form.Item
-                            label={"Kỹ năng"}
-                            name={"skills"}
-                            rules={[{ required: true, message: 'Vui lòng chọn ít nhất 1 skill!' }]}
 
-                        >
-                            <Select
-                                mode="multiple"
-                                allowClear
-                                suffixIcon={null}
-                                style={{ width: '100%' }}
-                                placeholder={
-                                    <>
-                                        <MonitorOutlined /> Tìm theo kỹ năng...
-                                    </>
-                                }
-                                optionLabelProp="label"
-                                options={optionsSkills}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col span={24}>
-                        <Button onClick={() => form.submit()}>Cập nhật</Button>
-                    </Col>
-                </Row>
-            </Form>
-        </>
-    )
-}
+//     }
+
+//     return (
+//         <>
+//             <Form
+//                 onFinish={onFinish}
+//                 form={form}
+//             >
+//                 <Row gutter={[20, 20]}>
+//                     <Col span={24}>
+//                         <Form.Item
+//                             label={"Kỹ năng"}
+//                             name={"skills"}
+//                             rules={[{ required: true, message: 'Vui lòng chọn ít nhất 1 skill!' }]}
+
+//                         >
+//                             <Select
+//                                 mode="multiple"
+//                                 allowClear
+//                                 suffixIcon={null}
+//                                 style={{ width: '100%' }}
+//                                 placeholder={
+//                                     <>
+//                                         <MonitorOutlined /> Tìm theo kỹ năng...
+//                                     </>
+//                                 }
+//                                 optionLabelProp="label"
+//                                 options={optionsSkills}
+//                             />
+//                         </Form.Item>
+//                     </Col>
+//                     <Col span={24}>
+//                         <Button onClick={() => form.submit()}>Cập nhật</Button>
+//                     </Col>
+//                 </Row>
+//             </Form>
+//         </>
+//     )
+// }
 
 const ManageAccount = (props: IProps) => {
     const { open, onClose } = props;
@@ -245,11 +245,11 @@ const ManageAccount = (props: IProps) => {
             label: `Rải CV`,
             children: <UserResume />,
         },
-        {
-            key: 'email-by-skills',
-            label: `Nhận Jobs qua Email`,
-            children: <JobByEmail />,
-        },
+        // {
+        //     key: 'email-by-skills',
+        //     label: `Nhận Jobs qua Email`,
+        //     children: <JobByEmail />,
+        // },
         {
             key: 'user-update-info',
             label: `Cập nhật thông tin`,
